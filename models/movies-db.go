@@ -42,7 +42,7 @@ func (m *DBModel) Get(id int) (*Movie, error) {
 	rows, _ := m.DB.QueryContext(ctx, query, id)
 	defer rows.Close()
 
-	var genres []MovieGenre
+	genres := make(map[int]string)
 
 	for rows.Next() {
 		var mg MovieGenre
@@ -57,7 +57,7 @@ func (m *DBModel) Get(id int) (*Movie, error) {
 			return nil, err
 		}
 
-		genres = append(genres, mg)
+		genres[mg.ID] = mg.Genre.GenreName
 	}
 	movie.MovieGenre = genres
 	return &movie, nil
