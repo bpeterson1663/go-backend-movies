@@ -1,8 +1,19 @@
 package models
 
 import (
+	"database/sql"
 	"time"
 )
+
+type Models struct {
+	DB DBModel
+}
+
+func NewModels(db *sql.DB) Models {
+	return Models{
+		DB: DBModel{DB: db},
+	}
+}
 
 type Movie struct {
 	ID          int          `json:"id"`
@@ -13,23 +24,23 @@ type Movie struct {
 	Runtime     int          `json:"runtime"`
 	Rating      int          `json:"rating"`
 	MPAARating  string       `json:"mpaaRating"`
-	CreatedAt   time.Time    `json:"createdAt"`
-	UpdatedAt   time.Time    `json:"updatedAt"`
-	MovieGenre  []MovieGenre `json:"-"`
+	CreatedAt   time.Time    `json:"-"`
+	UpdatedAt   time.Time    `json:"-"`
+	MovieGenre  []MovieGenre `json:"genres"`
 }
 
 type Genre struct {
-	ID        int       `json:"id"`
-	GenreName string    `json:"genre"`
-	CreatedAt time.Time `json:"createdAt"`
+	ID        int       `json:"-"`
+	GenreName string    `json:"genreName"`
+	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type MovieGenre struct {
-	ID        int       `json:"id"`
-	MovieID   int       `json:"movieId"`
-	GenreID   int       `json:"genreId"`
+	ID        int       `json:"-"`
+	MovieID   int       `json:"-"`
+	GenreID   int       `json:"-"`
 	Genre     Genre     `json:"genre"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }
