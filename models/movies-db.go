@@ -52,7 +52,7 @@ func (m *DBModel) Get(id int) (*Movie, error) {
 	rows, _ := m.DB.QueryContext(ctx, query, id)
 	defer rows.Close()
 
-	genres := make(map[int]string)
+	var genres []Genre
 	for rows.Next() {
 		var mg MovieGenre
 		err := rows.Scan(
@@ -64,7 +64,13 @@ func (m *DBModel) Get(id int) (*Movie, error) {
 		if err != nil {
 			return nil, err
 		}
-		genres[mg.ID] = mg.Genre.GenreName
+
+		var genre = Genre{
+			ID:        *&mg.GenreID,
+			GenreName: *&mg.Genre.GenreName,
+		}
+
+		genres = append(genres, genre)
 	}
 
 	movie.MovieGenre = genres
@@ -119,7 +125,7 @@ func (m *DBModel) All() ([]*Movie, error) {
 
 		genreRows, _ := m.DB.QueryContext(ctx, genreQuery, movie.ID)
 
-		genres := make(map[int]string)
+		var genres []Genre
 		for genreRows.Next() {
 			var mg MovieGenre
 			err := genreRows.Scan(
@@ -131,10 +137,14 @@ func (m *DBModel) All() ([]*Movie, error) {
 			if err != nil {
 				return nil, err
 			}
-			genres[mg.ID] = mg.Genre.GenreName
+			var genre = Genre{
+				ID:        *&mg.GenreID,
+				GenreName: *&mg.Genre.GenreName,
+			}
+
+			genres = append(genres, genre)
 		}
 		genreRows.Close()
-
 		movie.MovieGenre = genres
 		movies = append(movies, &movie)
 
