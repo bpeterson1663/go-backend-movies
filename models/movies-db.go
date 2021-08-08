@@ -53,7 +53,7 @@ func (m *DBModel) Get(id int) (*Movie, error) {
 	rows, _ := m.DB.QueryContext(ctx, query, id)
 	defer rows.Close()
 
-	var genres []Genre
+	var genres = make([]Genre, 0)
 	for rows.Next() {
 		var mg MovieGenre
 		err := rows.Scan(
@@ -129,7 +129,7 @@ func (m *DBModel) All(genre ...int) ([]*Movie, error) {
 
 		genreRows, _ := m.DB.QueryContext(ctx, genreQuery, movie.ID)
 
-		var genres []Genre
+		var genres = make([]Genre, 0)
 		for genreRows.Next() {
 			var mg MovieGenre
 			err := genreRows.Scan(
