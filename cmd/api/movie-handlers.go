@@ -87,14 +87,15 @@ func (app *application) getAllMoviesByGenre(w http.ResponseWriter, r *http.Reque
 }
 
 type MoviePayload struct {
-	ID          string `json:"id"`
+	ID          int    `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	ReleaseDate string `json:"releaseDate"`
-	Runtime     string `json:"runtime"`
-	Rating      string `json:"rating"`
+	Runtime     int    `json:"runtime"`
+	Rating      int    `json:"rating"`
 	MPAARating  string `json:"mpaaRating"`
 }
+
 func (app *application) editMovie(w http.ResponseWriter, r *http.Request) {
 	var payload MoviePayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
@@ -105,20 +106,42 @@ func (app *application) editMovie(w http.ResponseWriter, r *http.Request) {
 
 	var movie models.Movie
 
-	movie.ID, _ = strconv.Atoi(payload.ID)
+	if payload.ID != 0 {
+		id := payload.ID
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+		m, err := app.models.DB.Get(id)
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+		movie = *m
+		movie.UpdatedAt = time.Now()
+	}
+	movie.ID = payload.ID
 	movie.Title = payload.Title
 	movie.Description = payload.Description
 	movie.ReleaseDate, _ = time.Parse("2006-01-02", payload.ReleaseDate)
 	movie.Year = movie.ReleaseDate.Year()
-	movie.Runtime, _ = strconv.Atoi(payload.Runtime)
+	movie.Runtime = payload.Runtime
 	movie.MPAARating = payload.MPAARating
 	movie.CreatedAt = time.Now()
 	movie.UpdatedAt = time.Now()
 
-	err = app.models.DB.InsertMovie(movie)
-	if err != nil {
-		app.errorJSON(w, err)
-		return
+	if movie.ID == 0 {
+		err = app.models.DB.InsertMovie(movie)
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+	} else {
+		err = app.models.DB.UpdateMovie(movie)
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
 	}
 
 	ok := jsonResp{
