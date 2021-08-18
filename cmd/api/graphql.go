@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -15,6 +16,7 @@ import (
 
 var movies []*models.Movie
 
+// graphql schema definition
 var fields = graphql.Fields{
 	"movie": &graphql.Field{
 		Type:        movieType,
@@ -109,28 +111,46 @@ var movieType = graphql.NewObject(
 func (app *application) moviesGraphQL(w http.ResponseWriter, r *http.Request) {
 	movies, _ = app.models.DB.All()
 
-	q, _ := io.ReadAll(r.Body)
-	query := string(q)
-
-	log.Println(query)
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	if err != nil {
+		log.Fatalln("Error reading body", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if err := r.Body.Close(); err != nil {
+		log.Fatalln("Error readying body", err)
+	}
+	var apolloQuery map[string]interface{}
+	if err := json.Unmarshal(body, &apolloQuery); err != nil { // unmarshall body contents as a type query
+		fmt.Println("Error on Unmarshalling", err)
+		w.WriteHeader(422) // unprocessable entity
+		if err := json.NewEncoder(w).Encode(err); err != nil {
+			log.Fatalln("Error unmarshalling data", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+	query := apolloQuery["query"]
 
 	rootQuery := graphql.ObjectConfig{Name: "RootQuery", Fields: fields}
 	schemaConfig := graphql.SchemaConfig{Query: graphql.NewObject(rootQuery)}
 	schema, err := graphql.NewSchema(schemaConfig)
-
+	log.Println("error creating graphql", err)
 	if err != nil {
 		app.errorJSON(w, errors.New("failed to create schema"))
 		log.Println(err)
 		return
 	}
 
-	params := graphql.Params{Schema: schema, RequestString: query}
+	params := graphql.Params{Schema: schema, RequestString: query.(string)}
 	resp := graphql.Do(params)
+
+	// log.Println("response from graphql ", resp)
 	if len(resp.Errors) > 0 {
 		app.errorJSON(w, errors.New(fmt.Sprintf("failed: %+v", resp.Errors)))
 	}
 
-	j, _ := json.MarshalIndent(resp, "", " ")
+	j, _ := json.MarshalIndent(resp, "", "  ")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(j)
