@@ -44,7 +44,7 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Applicaton environment (development|production")
-	flag.StringVar(&cfg.db.dsn, "dsn", "postgres://postgres:mypassword@localhost/postgres?sslmode=disable", "Postgres Connection String")
+	flag.StringVar(&cfg.db.dsn, "dsn", os.Getenv("DATABASE_URL"), "Postgres Connection String")
 	flag.Parse()
 
 	cfg.jwt.secret = os.Getenv("GO_MOVIES_JWT")
