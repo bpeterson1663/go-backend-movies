@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -41,8 +42,9 @@ type application struct {
 
 func main() {
 	var cfg config
-
-	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
+	portString := os.Getenv("PORT")
+	port, _ := strconv.Atoi(portString)
+	flag.IntVar(&cfg.port, "port", port, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Applicaton environment (development|production")
 	flag.StringVar(&cfg.db.dsn, "dsn", os.Getenv("DATABASE_URL"), "Postgres Connection String")
 	flag.Parse()
