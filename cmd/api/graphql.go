@@ -58,7 +58,8 @@ var fields = graphql.Fields{
 			search, ok := params.Args["titleContains"].(string)
 			if ok {
 				for _, currentMovie := range movies {
-					if strings.Contains(currentMovie.Title, search) {
+					log.Println("movie", currentMovie.Title)
+					if strings.Contains(strings.ToLower(currentMovie.Title), strings.ToLower(search)) {
 						log.Println("Found one")
 						list = append(list, currentMovie)
 					}
@@ -131,6 +132,7 @@ func (app *application) moviesGraphQL(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	query := apolloQuery["query"]
+	variables := apolloQuery["variables"]
 
 	rootQuery := graphql.ObjectConfig{Name: "RootQuery", Fields: fields}
 	schemaConfig := graphql.SchemaConfig{Query: graphql.NewObject(rootQuery)}
@@ -142,7 +144,7 @@ func (app *application) moviesGraphQL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := graphql.Params{Schema: schema, RequestString: query.(string)}
+	params := graphql.Params{Schema: schema, RequestString: query.(string), VariableValues: variables.(map[string]interface{})}
 	resp := graphql.Do(params)
 
 	// log.Println("response from graphql ", resp)
