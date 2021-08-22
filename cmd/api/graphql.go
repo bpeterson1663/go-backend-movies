@@ -58,10 +58,8 @@ var fields = graphql.Fields{
 			search, ok := params.Args["titleContains"].(string)
 			if ok {
 				for _, currentMovie := range movies {
-					log.Println("movie", currentMovie.Title)
 					if strings.Contains(strings.ToLower(currentMovie.Title), strings.ToLower(search)) {
-						log.Println("Found one")
-						list = append(list, currentMovie)
+]						list = append(list, currentMovie)
 					}
 				}
 			}
