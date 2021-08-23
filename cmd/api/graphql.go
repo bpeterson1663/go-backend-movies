@@ -59,7 +59,7 @@ var fields = graphql.Fields{
 			if ok {
 				for _, currentMovie := range movies {
 					if strings.Contains(strings.ToLower(currentMovie.Title), strings.ToLower(search)) {
-]						list = append(list, currentMovie)
+						list = append(list, currentMovie)
 					}
 				}
 			}
