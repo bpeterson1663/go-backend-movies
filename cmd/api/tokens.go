@@ -18,6 +18,7 @@ var validUser = models.User{
 	Password: "$2a$12$4hmrLsFLST83b5cMdV5Kpe8nsiXCdnCGxx4AkCA7h6F.EB4U1RvvO",
 }
 
+// Credentials define the structure of the log in request
 type Credentials struct {
 	Username string `json:"email"`
 	Password string `json:"password"`
@@ -47,15 +48,9 @@ func (app *application) signIn(w http.ResponseWriter, r *http.Request) {
 	claims.Expires = jwt.NewNumericTime(time.Now().Add(24 * time.Hour))
 	claims.Issuer = "mydomain.com"
 	claims.Audiences = []string{"mydomain.com"}
-	app.logger.Printf("claims: ", claims.Subject)
-	app.logger.Printf("claims: ", claims.Issued)
-	app.logger.Printf("claims: ", claims.NotBefore)
-	app.logger.Printf("claims: ", claims.Expires)
-	app.logger.Printf("claims: ", claims.Issuer)
-	app.logger.Printf("claims: ", claims.Audiences)
+
 	jwtBytes, err := claims.HMACSign(jwt.HS256, []byte(app.config.jwt.secret))
 	if err != nil {
-		app.logger.Printf("error: ", err)
 		app.errorJSON(w, errors.New("error signing"))
 		return
 	}

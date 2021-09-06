@@ -111,6 +111,7 @@ func (app *application) deleteMovie(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// MoviePayload defines the payload of an individual movie
 type MoviePayload struct {
 	ID          int    `json:"id"`
 	Title       string `json:"title"`

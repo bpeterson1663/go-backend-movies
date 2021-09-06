@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -28,6 +27,7 @@ type config struct {
 	}
 }
 
+// AppStatus is the structure of the app
 type AppStatus struct {
 	Status      string `json:"status"`
 	Environment string `json:"environment"`
@@ -42,14 +42,12 @@ type application struct {
 
 func main() {
 	var cfg config
-	portString := os.Getenv("PORT")
-	port, _ := strconv.Atoi(portString)
-	flag.IntVar(&cfg.port, "port", port, "Server port to listen on")
-	flag.StringVar(&cfg.env, "env", "development", "Applicaton environment (development|production")
-	flag.StringVar(&cfg.db.dsn, "dsn", os.Getenv("DATABASE_URL"), "Postgres Connection String")
-	flag.Parse()
 
-	cfg.jwt.secret = os.Getenv("GO_MOVIES_JWT")
+	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
+	flag.StringVar(&cfg.env, "env", "development", "Applicaton environment (development|production")
+	flag.StringVar(&cfg.db.dsn, "dsn", "postgres://postgres:mypassword@localhost/postgres?sslmode=disable", "Postgres Connection String")
+	flag.StringVar(&cfg.jwt.secret, "jwt-secret", "2dce505d96a53c5768052ee90f3df2055657518dad489160df9913f66042e160", "secret")
+	flag.Parse()
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
